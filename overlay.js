@@ -24,6 +24,7 @@ class PayasoGacha {
         this.jumpY = 0; this.velY = 0; this.enSuelo = true;
         this.timerVida = Date.now(); this.explotando = false;
         this.f = 0; this.tAnim = 0; this.timerBroma = 0; this.estado = 'caminar';
+        this.kills = 0; // Registro de bajas activado
         this.hue = Math.random() * 360;
         this.colorTraje = `hsl(${this.hue}, 90%, 55%)`;
         this.colorSombra = `hsl(${this.hue}, 90%, 35%)`;
@@ -80,7 +81,10 @@ class PayasoGacha {
         if (this.velX < 0) { ctx.translate(px + 48, py); ctx.scale(-1, 1); ctx.translate(-px, -py); }
         this.dibujarPayasoPixel(px, py); ctx.restore();
         ctx.save(); ctx.fillStyle = 'rgba(10, 10, 12, 0.85)'; ctx.font = 'bold 12px sans-serif';
-        let t = `${this.nombre} [${this.rar}]`; let ancho = ctx.measureText(t).width; let barraY = py - (22 * this.escala);
+        
+        // Muestra el nombre, el rango y las Kills con una calavera si tiene alguna baja
+        let t = `${this.nombre} [${this.rar}]` + (this.kills > 0 ? ` 💀 ${this.kills}` : '');
+        let ancho = ctx.measureText(t).width; let barraY = py - (22 * this.escala);
         ctx.fillRect(px + (24 * this.escala) - ancho / 2 - 6, barraY, ancho + 12, 18);
         ctx.fillStyle = this.col; ctx.textAlign = 'center'; ctx.fillText(t, px + (24 * this.escala), barraY + 13); ctx.restore();
     }
@@ -89,7 +93,17 @@ class PayasoGacha {
         if (this.explotando) return; this.estado = 'broma'; this.timerBroma = Date.now() + 1000;
         for (let oId in avatares) {
             if (oId === this.id) continue; const e = avatares[oId];
-            if (Math.abs((this.x + 24) - (e.x + 24)) < 85) { e.velY = 7; e.enSuelo = false; e.estado = 'quieto'; e.velX = (e.x > this.x ? 2.5 : -2.5); }
+            if (Math.abs((this.x + 24) - (e.x + 24)) < 85) { 
+                e.velY = 8; e.enSuelo = false; e.estado = 'quieto'; 
+                let dirEmpujon = e.x > this.x ? 6 : -6; e.velX = dirEmpujon; 
+                
+                // Si el empujón manda al enemigo cerca del borde de la pantalla, sumamos una kill
+                setTimeout(() => {
+                    if ((dirEmpujon > 0 && e.x > canvas.width - 120) || (dirEmpujon < 0 && e.x < 120)) {
+                        this.kills++;
+                    }
+                }, 500);
+            }
         }
     }
     explotar() { this.explotando = true; for (let i = 0; i < 45; i++) { let c = Math.random() > 0.5 ? this.col : this.colorPelo; particulas.push(new Particula(this.x + (24 * this.escala), this.y + (28 * this.escala) - this.jumpY, c)); } }
