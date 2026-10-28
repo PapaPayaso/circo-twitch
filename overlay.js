@@ -156,11 +156,12 @@ ws.onmessage = (ev) => {
     const msg = ev.data;
     if (msg.includes('PRIVMSG')) {
         const displayMatch = msg.match(/display-name=([^;]+)/); const userIdMatch = msg.match(/user-id=(\d+)/);
-        const usuario = displayMatch ? displayMatch : 'Espectador'; const idUsuario = userIdMatch ? userIdMatch : usuario;
+        const usuario = displayMatch ? displayMatch[1] : 'Espectador'; const idUsuario = userIdMatch ? userIdMatch[1] : usuario;
         
         if (!avatares[idUsuario]) avatares[idUsuario] = new PayasoGacha(idUsuario, usuario); else avatares[idUsuario].timerVida = Date.now();
-        const p = avatares[idUsuario]; const partes = msg.split(`PRIVMSG #${canal} :`); const txt = partes ? partes.trim().toLowerCase() : '';
+        const p = avatares[idUsuario]; const partes = msg.split(`PRIVMSG #${canal} :`); const txt = partes[1] ? partes[1].trim().toLowerCase() : '';
 
+        // RESTAURADO EL COMANDO DE PRUEBAS
         if (txt.startsWith('!test_bot')) {
             let idBot = 'bot_' + Math.floor(Math.random() * 1000);
             avatares[idBot] = new PayasoGacha(idBot, 'Payasito_Bot');
