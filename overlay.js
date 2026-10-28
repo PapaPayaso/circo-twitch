@@ -36,6 +36,7 @@ class PayasoGacha {
         this.colorSombra = `hsl(${this.hue}, 90%, 35%)`;
         this.colorPelo = `hsl(${(this.hue + 120) % 360}, 95%, 50%)`;
 
+        // Sorteo aleatorio de sombreros para el pelo afro
         let som = Math.random() * 100;
         if (som <= 33) this.tipoSombrero = 'copa';
         else if (som > 33 && som <= 66) this.tipoSombrero = 'bufon';
@@ -60,30 +61,29 @@ class PayasoGacha {
         if (Date.now() > this.tAnim) { this.tAnim = Date.now() + 120; this.f = (this.f + 1) % 4; }
     }
     dibujarPayasoPixel(px, py) {
+        // Pelo afro base
         ctx.fillStyle = this.colorPelo; ctx.fillRect(px + 6, py + 2, 10, 14); ctx.fillRect(px + 32, py + 2, 10, 14); ctx.fillRect(px + 12, py, 24, 6);
         
+        // Dibujo matemático de los sombreros sobre el pelo
         if (this.tipoSombrero === 'copa') {
-            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(px + 10, py - 10, 28, 4);
-            ctx.fillRect(px + 14, py - 22, 20, 12);
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(px + 10, py - 10, 28, 4); ctx.fillRect(px + 14, py - 22, 20, 12);
             ctx.fillStyle = '#ff0055'; ctx.fillRect(px + 14, py - 14, 20, 4);
         } else if (this.tipoSombrero === 'bufon') {
             ctx.fillStyle = '#ffcc00'; ctx.fillRect(px + 12, py - 6, 24, 6);
-            ctx.fillStyle = '#ff0055'; ctx.fillRect(px + 12, py - 14, 10, 8);
-            ctx.fillStyle = '#0070dd'; ctx.fillRect(px + 26, py - 14, 10, 8);
+            ctx.fillStyle = '#ff0055'; ctx.fillRect(px + 12, py - 14, 10, 8); ctx.fillStyle = '#0070dd'; ctx.fillRect(px + 26, py - 14, 10, 8);
             ctx.fillStyle = '#ffcc00'; ctx.fillRect(px + 16, py - 18, 3, 4); ctx.fillRect(px + 29, py - 18, 3, 4);
         } else if (this.tipoSombrero === 'casco') {
             ctx.fillStyle = '#5a5a66'; ctx.fillRect(px + 12, py - 4, 24, 6); ctx.fillRect(px + 16, py - 10, 16, 6);
             ctx.fillStyle = '#ffcc00'; ctx.fillRect(px + 22, py - 16, 4, 6);
         }
 
+        // Cara y Traje
         ctx.fillStyle = '#ffffff'; ctx.fillRect(px + 12, py + 6, 24, 16); ctx.fillStyle = '#ff0000'; ctx.fillRect(px + 21, py + 14, 6, 5);
         ctx.fillStyle = this.colorTraje; ctx.fillRect(px + 8, py + 22, 32, 22); ctx.fillStyle = this.colorSombra; ctx.fillRect(px + 8, py + 38, 32, 6);
         ctx.fillStyle = '#ffffff'; ctx.fillRect(px + 18, py + 22, 12, 6); ctx.fillStyle = '#ffcc00'; ctx.fillRect(px + 21, py + 30, 6, 6);
         ctx.lineWidth = 2;
         if (this.tipoGafas === 'redondas') {
-            ctx.strokeStyle = '#000'; ctx.fillStyle = '#00ffcc';
-            ctx.beginPath(); ctx.arc(px + 18, py + 11, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-            ctx.beginPath(); ctx.arc(px + 30, py + 11, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.strokeStyle = '#000'; ctx.fillStyle = '#00ffcc'; ctx.beginPath(); ctx.arc(px + 18, py + 11, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(px + 30, py + 11, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         } else if (this.tipoGafas === 'estrella') {
             ctx.fillStyle = '#ffd700'; ctx.fillRect(px + 14, py + 8, 7, 7); ctx.fillRect(px + 27, py + 8, 7, 7);
         } else if (this.tipoGafas === 'espiral') {
