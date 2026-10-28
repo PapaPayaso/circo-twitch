@@ -1,3 +1,6 @@
+// ============================================================================
+// BLOQUE 1: CONFIGURACIÓN BASE, LIENZO Y EFECTOS DE CONFETI / PARTÍCULAS
+// ============================================================================
 const canal = 'papapayaso';
 const canvas = document.getElementById('canvasStream');
 const ctx = canvas.getContext('2d');
@@ -16,6 +19,9 @@ class Particula {
     act() { this.x += this.vx; this.vy += 0.25; this.y += this.vy; this.alfa -= 0.02; }
     dib() { ctx.save(); ctx.globalAlpha = this.alfa; ctx.fillStyle = this.col; ctx.fillRect(this.x, this.y, this.size, this.size); ctx.restore(); }
 }
+// ============================================================================
+// BLOQUE 2: CLASE PRINCIPAL DEL PAYASO, SISTEMA GACHA Y DISEÑO DE ACCESORIOS
+// ============================================================================
 class PayasoGacha {
     constructor(id, nombre) {
         this.id = id; this.nombre = nombre;
@@ -29,6 +35,11 @@ class PayasoGacha {
         this.colorTraje = `hsl(${this.hue}, 90%, 55%)`;
         this.colorSombra = `hsl(${this.hue}, 90%, 35%)`;
         this.colorPelo = `hsl(${(this.hue + 120) % 360}, 95%, 50%)`;
+
+        let som = Math.random() * 100;
+        if (som <= 33) this.tipoSombrero = 'copa';
+        else if (som > 33 && som <= 66) this.tipoSombrero = 'bufon';
+        else this.tipoSombrero = 'casco';
 
         let r = Math.random() * 100;
         if (r <= 1 && !exclusivoSalió) {
@@ -50,6 +61,21 @@ class PayasoGacha {
     }
     dibujarPayasoPixel(px, py) {
         ctx.fillStyle = this.colorPelo; ctx.fillRect(px + 6, py + 2, 10, 14); ctx.fillRect(px + 32, py + 2, 10, 14); ctx.fillRect(px + 12, py, 24, 6);
+        
+        if (this.tipoSombrero === 'copa') {
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(px + 10, py - 10, 28, 4);
+            ctx.fillRect(px + 14, py - 22, 20, 12);
+            ctx.fillStyle = '#ff0055'; ctx.fillRect(px + 14, py - 14, 20, 4);
+        } else if (this.tipoSombrero === 'bufon') {
+            ctx.fillStyle = '#ffcc00'; ctx.fillRect(px + 12, py - 6, 24, 6);
+            ctx.fillStyle = '#ff0055'; ctx.fillRect(px + 12, py - 14, 10, 8);
+            ctx.fillStyle = '#0070dd'; ctx.fillRect(px + 26, py - 14, 10, 8);
+            ctx.fillStyle = '#ffcc00'; ctx.fillRect(px + 16, py - 18, 3, 4); ctx.fillRect(px + 29, py - 18, 3, 4);
+        } else if (this.tipoSombrero === 'casco') {
+            ctx.fillStyle = '#5a5a66'; ctx.fillRect(px + 12, py - 4, 24, 6); ctx.fillRect(px + 16, py - 10, 16, 6);
+            ctx.fillStyle = '#ffcc00'; ctx.fillRect(px + 22, py - 16, 4, 6);
+        }
+
         ctx.fillStyle = '#ffffff'; ctx.fillRect(px + 12, py + 6, 24, 16); ctx.fillStyle = '#ff0000'; ctx.fillRect(px + 21, py + 14, 6, 5);
         ctx.fillStyle = this.colorTraje; ctx.fillRect(px + 8, py + 22, 32, 22); ctx.fillStyle = this.colorSombra; ctx.fillRect(px + 8, py + 38, 32, 6);
         ctx.fillStyle = '#ffffff'; ctx.fillRect(px + 18, py + 22, 12, 6); ctx.fillStyle = '#ffcc00'; ctx.fillRect(px + 21, py + 30, 6, 6);
@@ -74,6 +100,9 @@ class PayasoGacha {
             ctx.fillStyle = '#8b5a2b'; ctx.fillRect(bx, py + 26, 12 * dir, 4); ctx.fillStyle = '#ffffff'; ctx.fillRect(dir === 1 ? bx + 2 : bx - 2, py + 20, 8 * dir, 6);
         }
     }
+// ============================================================================
+// BLOQUE 3: CONTROL DE FÍSICAS, SISTEMA DE KILLS Y CONEXIÓN AL CHAT DE TWITCH
+// ============================================================================
     dib() {
         if (this.explotando) return; const px = this.x, py = this.y - this.jumpY;
         ctx.save(); ctx.shadowBlur = this.rar !== '🎪 COMÚN' ? 18 : 0; ctx.shadowColor = this.col;
@@ -81,6 +110,7 @@ class PayasoGacha {
         if (this.velX < 0) { ctx.translate(px + 48, py); ctx.scale(-1, 1); ctx.translate(-px, -py); }
         this.dibujarPayasoPixel(px, py); ctx.restore();
         ctx.save(); ctx.fillStyle = 'rgba(10, 10, 12, 0.85)'; ctx.font = 'bold 12px sans-serif';
+        
         let t = `${this.nombre} [${this.rar}]` + (this.kills > 0 ? ` 💀 ${this.kills}` : '');
         let ancho = ctx.measureText(t).width; let barraY = py - (22 * this.escala);
         ctx.fillRect(px + (24 * this.escala) - ancho / 2 - 6, barraY, ancho + 12, 18);
@@ -126,17 +156,15 @@ ws.onmessage = (ev) => {
     const msg = ev.data;
     if (msg.includes('PRIVMSG')) {
         const displayMatch = msg.match(/display-name=([^;]+)/); const userIdMatch = msg.match(/user-id=(\d+)/);
-        const usuario = displayMatch ? displayMatch[1] : 'Espectador'; const idUsuario = userIdMatch ? userIdMatch[1] : usuario;
+        const usuario = displayMatch ? displayMatch : 'Espectador'; const idUsuario = userIdMatch ? userIdMatch : usuario;
         
         if (!avatares[idUsuario]) avatares[idUsuario] = new PayasoGacha(idUsuario, usuario); else avatares[idUsuario].timerVida = Date.now();
-        const p = avatares[idUsuario]; const partes = msg.split(`PRIVMSG #${canal} :`); const txt = partes[1] ? partes[1].trim().toLowerCase() : '';
+        const p = avatares[idUsuario]; const partes = msg.split(`PRIVMSG #${canal} :`); const txt = partes ? partes.trim().toLowerCase() : '';
 
-        // COMANDOS DE PRUEBA EN VIVO PARA EL STREAMER
         if (txt.startsWith('!test_bot')) {
             let idBot = 'bot_' + Math.floor(Math.random() * 1000);
             avatares[idBot] = new PayasoGacha(idBot, 'Payasito_Bot');
-            // Los situamos cerca de tu personaje para que puedas golpearlo fácilmente
-            avatares[idBot].x = p.x + (Math.random() > 0.5 ? 50 : -50);
+            avatares[idBot].x = canvas.width / 2;
         } else if (txt.startsWith('!saltar')) p.saltar();
         else if (txt.startsWith('!correr')) { if (Math.abs(p.velX) < 3) p.velX *= 2.0; }
         else if (txt.startsWith('!parar')) p.velX = 0;
