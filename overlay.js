@@ -24,7 +24,7 @@ class PayasoGacha {
         this.jumpY = 0; this.velY = 0; this.enSuelo = true;
         this.timerVida = Date.now(); this.explotando = false;
         this.f = 0; this.tAnim = 0; this.timerBroma = 0; this.estado = 'caminar';
-        this.kills = 0; // Registro de bajas activado
+        this.kills = 0;
         this.hue = Math.random() * 360;
         this.colorTraje = `hsl(${this.hue}, 90%, 55%)`;
         this.colorSombra = `hsl(${this.hue}, 90%, 35%)`;
@@ -81,8 +81,6 @@ class PayasoGacha {
         if (this.velX < 0) { ctx.translate(px + 48, py); ctx.scale(-1, 1); ctx.translate(-px, -py); }
         this.dibujarPayasoPixel(px, py); ctx.restore();
         ctx.save(); ctx.fillStyle = 'rgba(10, 10, 12, 0.85)'; ctx.font = 'bold 12px sans-serif';
-        
-        // Muestra el nombre, el rango y las Kills con una calavera si tiene alguna baja
         let t = `${this.nombre} [${this.rar}]` + (this.kills > 0 ? ` 💀 ${this.kills}` : '');
         let ancho = ctx.measureText(t).width; let barraY = py - (22 * this.escala);
         ctx.fillRect(px + (24 * this.escala) - ancho / 2 - 6, barraY, ancho + 12, 18);
@@ -97,7 +95,6 @@ class PayasoGacha {
                 e.velY = 8; e.enSuelo = false; e.estado = 'quieto'; 
                 let dirEmpujon = e.x > this.x ? 6 : -6; e.velX = dirEmpujon; 
                 
-                // Si el empujón manda al enemigo cerca del borde de la pantalla, sumamos una kill
                 setTimeout(() => {
                     if ((dirEmpujon > 0 && e.x > canvas.width - 120) || (dirEmpujon < 0 && e.x < 120)) {
                         this.kills++;
@@ -130,9 +127,17 @@ ws.onmessage = (ev) => {
     if (msg.includes('PRIVMSG')) {
         const displayMatch = msg.match(/display-name=([^;]+)/); const userIdMatch = msg.match(/user-id=(\d+)/);
         const usuario = displayMatch ? displayMatch[1] : 'Espectador'; const idUsuario = userIdMatch ? userIdMatch[1] : usuario;
+        
         if (!avatares[idUsuario]) avatares[idUsuario] = new PayasoGacha(idUsuario, usuario); else avatares[idUsuario].timerVida = Date.now();
         const p = avatares[idUsuario]; const partes = msg.split(`PRIVMSG #${canal} :`); const txt = partes[1] ? partes[1].trim().toLowerCase() : '';
-        if (txt.startsWith('!saltar')) p.saltar();
+
+        // COMANDOS DE PRUEBA EN VIVO PARA EL STREAMER
+        if (txt.startsWith('!test_bot')) {
+            let idBot = 'bot_' + Math.floor(Math.random() * 1000);
+            avatares[idBot] = new PayasoGacha(idBot, 'Payasito_Bot');
+            // Los situamos cerca de tu personaje para que puedas golpearlo fácilmente
+            avatares[idBot].x = p.x + (Math.random() > 0.5 ? 50 : -50);
+        } else if (txt.startsWith('!saltar')) p.saltar();
         else if (txt.startsWith('!correr')) { if (Math.abs(p.velX) < 3) p.velX *= 2.0; }
         else if (txt.startsWith('!parar')) p.velX = 0;
         else if (txt.startsWith('!broma') || txt.startsWith('!pelea')) p.broma();
